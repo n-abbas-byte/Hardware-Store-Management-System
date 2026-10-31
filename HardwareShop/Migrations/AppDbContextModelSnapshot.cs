@@ -25,6 +25,10 @@ namespace HardwareShop.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ItemCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("LowStockLimit")
                         .HasColumnType("INTEGER");
 

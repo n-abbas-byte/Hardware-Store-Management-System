@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HSMS - All Products</title>
+<style>
+  :root {
+    --steel: #2b3a42;
+    --bg: #e8eaec;
+    --card: #ffffff;
+    --line: #c5cbd0;
+    --accent: #f2a900;
+    --text: #1d262b;
+    --low-bg: #fbe9e7;
+    --low-text: #a12622;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem; }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  h1 { margin: 0; font-size: 1.4rem; color: var(--steel); }
+  .btn {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--text);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .btn:hover { background: #d99800; }
+  .btn:focus-visible, a:focus-visible { outline: 3px solid var(--steel); outline-offset: 1px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 6px solid var(--accent);
+    border-radius: 6px;
+    padding: 1rem;
+  }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  th, td { padding: 0.65rem 0.75rem; text-align: left; border-bottom: 1px solid var(--line); }
+  th { background: var(--steel); color: #fff; font-weight: 600; }
+  td.num, th.num { text-align: right; }
+  tr.low td { background: var(--low-bg); }
+  .badge { color: var(--low-text); font-weight: 700; }
+  #status { margin: 0.75rem 0 0; font-weight: 600; }
+  footer { margin-top: 1rem; text-align: center; }
+  a { color: var(--steel); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>All Products</h1>
+      <a class="btn" href="add-product.html">+ Add Product</a>
+    </header>
+
+    <section class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th class="num">Price</th>
+              <th class="num">Qty</th>
+              <th>Stock</th>
+            </tr>
+          </thead>
+          <tbody id="productRows"></tbody>
+        </table>
+      </div>
+      <p id="status" role="status" aria-live="polite">Loading...</p>
+    </section>
+
+    <footer><a href="products-menu.html">Back to Menu</a></footer>
+  </div>
+
+<script>
+  const rows = document.getElementById("productRows");
+  const status = document.getElementById("status");
+
+  function makeCell(text, className) {
+    const td = document.createElement("td");
+    td.textContent = text;
+    if (className) td.className = className;
+    return td;
+  }
+
+  function makeRow(product) {
+    const tr = document.createElement("tr");
+    const isLow = product.quantity <= product.lowStockLimit;
+    if (isLow) tr.className = "low";
+
+    tr.appendChild(makeCell(product.itemCode));
+    tr.appendChild(makeCell(product.name));
+    tr.appendChild(makeCell(product.category));
+    tr.appendChild(makeCell(product.price.toFixed(2), "num"));
+    tr.appendChild(makeCell(product.quantity, "num"));
+
+    const stockCell = makeCell(isLow ? "Low stock" : "OK");
+    if (isLow) stockCell.className = "badge";
+    tr.appendChild(stockCell);
+
+    return tr;
+  }
+
+  async function loadProducts() {
+    try {
+      const response = await fetch("/api/products");
+      if (!response.ok) {
+        status.textContent = "Could not load products (error " + response.status + ").";
+        return;
+      }
+
+      const products = await response.json();
+      rows.replaceChildren();
+
+      if (products.length === 0) {
+        status.textContent = "No products yet. Add your first one.";
+        return;
+      }
+
+      for (const product of products) {
+        rows.appendChild(makeRow(product));
+      }
+      status.textContent = products.length + " product(s).";
+    } catch (error) {
+      status.textContent = "Cannot reach the server. Is the backend running?";
+    }
+  }
+
+  loadProducts();
+</script>
+</body>
+</html>
