@@ -9,7 +9,10 @@ void ConfigureDb(DbContextOptionsBuilder options)
 builder.Services.AddDbContext<AppDbContext>(ConfigureDb);
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
-
+app.MapGet("/api/products", GetAllProducts);
 app.Run();
 
+IResult GetAllProducts(AppDbContext db)
+{
+    return Results.Ok(db.Products.ToList());
+}
