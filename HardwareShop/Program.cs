@@ -26,6 +26,7 @@ app.UseStaticFiles();
 app.MapGet("/api/products", GetAllProducts);
 app.MapPost("/api/products", AddProduct);
 app.MapPost("/api/auth/login", Login);
+app.MapGet("/api/products/{id}", GetProductsByID);
 app.Run();
 
 IResult GetAllProducts(AppDbContext db)
@@ -57,4 +58,13 @@ IResult Login([FromBody] LoginRequest Request, IConfiguration config)
     }
     else
         return Results.Unauthorized();
+}
+
+IResult GetProductsByID(int id, AppDbContext db)
+{
+    var products = db.Products.FirstOrDefault(p => p.Id == id);
+    if (products != null)
+        return Results.Ok(products);
+    else
+        return Results.NotFound();
 }
